@@ -42,7 +42,6 @@ FOR i := 0 TO 3 DO
     IF DownCall[i]  THEN ReqDown[i]  := TRUE; END_IF;
 END_FOR;
 
-
 // =========================================================
 // 2. Detect current floor
 // =========================================================
@@ -94,7 +93,6 @@ ELSE
         StopActive := TRUE;
     END_IF;
 END_IF;
-
 
 // =========================================================
 // 5. DOOR OPEN + WAIT 5 SECONDS + CLOSE
@@ -173,13 +171,12 @@ IF NOT MotorUp AND NOT MotorDown THEN
     MoveTimer(IN := FALSE);
 END_IF;
 
+// Rung 1 - Rising edge latch on StopActive
 uptrig(CLK := StopActive);
-IF uptrig.Q THEN
-    mem := TRUE;
-END_IF;
+mem := uptrig.Q OR mem;
 
-(* --- Rung 2 : StopActive AND NOT B5 resets mem and sets mem1 --- *)
-IF StopActive AND NOT B5 THEN
+(* --- Rung 2 : StopActive AND B5 resets mem and sets mem1 --- *)
+IF StopActive AND B5 THEN
     mem := FALSE;
     mem1 := TRUE;
 END_IF;
@@ -199,7 +196,6 @@ Q4 := dortime.Q AND (NOT B6);
 (* --- Rung 5 : Falling edge of Q4 resets StopActive and mem1 --- *)
 fall(CLK := Q4);
 IF fall.Q THEN
-    StopActive := FALSE;
     mem1 := FALSE;
     ReqUp[CurrentFloor]    := FALSE;
     UpCall[CurrentFloor]   := FALSE;
